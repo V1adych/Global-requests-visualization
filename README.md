@@ -1,9 +1,7 @@
 # Data Wrangling & Visualization: Assignment 2
 Student: Nikita Zagainov, [`n.zagainov@innopolis.university`](mailto:n.zagainov@innopolis.university)
 
-## Preview
-
-<video width="640" height="360" controls>
+<video width=640 height=360 controls>
   <source src="./assets/demo.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
