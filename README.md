@@ -1,10 +1,8 @@
 # Data Wrangling & Visualization: Assignment 2
 Student: Nikita Zagainov, [`n.zagainov@innopolis.university`](mailto:n.zagainov@innopolis.university)
 
-<video width=640 height=360 controls>
-  <source src="./assets/demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+
+![Preview Video](./assets/demo.gif)
 
 ## How to use
 **Make sure you have ports `3000`, `5000`, `8000` available** \
