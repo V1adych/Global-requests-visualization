@@ -1,6 +1,13 @@
 # Data Wrangling & Visualization: Assignment 2
 Student: Nikita Zagainov, [`n.zagainov@innopolis.university`](mailto:n.zagainov@innopolis.university)
 
+## Preview
+
+<video width="640" height="360" controls poster="./assets/thumbnail.png">
+  <source src="./assets/demo2.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 ## How to use
 **Make sure you have ports `3000`, `5000`, `8000` available** \
 To launch, simply type:
