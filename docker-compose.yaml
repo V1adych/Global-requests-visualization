@@ -1,0 +1,23 @@
+services:
+  data-server:
+    build: ./data-server
+    container_name: data-server
+    ports:
+      - "3000:3000"
+
+  backend:
+    depends_on:
+      - data-server
+    build: ./backend
+    ports:
+      - "8000:8000"
+    container_name: backend
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - data-server
+      - backend
+    ports:
+      - "5000:5000"
+    container_name: frontend
