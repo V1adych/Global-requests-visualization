@@ -19,7 +19,6 @@ async function fetchData() {
     }
 }
 
-
 function onDocumentMouseDown(event) {
     event.preventDefault();
     document.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -44,9 +43,250 @@ function onDocumentMouseUp(event) {
     targetRotationY = 0;
 }
 
+// Add this function to plot requests per day
+function plotRequestsPerDay(data) {
+    // Aggregate counts per day
+    const counts = {};
+    data.forEach(row => {
+        const date = new Date(row.Timestamp * 1000).toISOString().slice(0, 10);
+        counts[date] = (counts[date] || 0) + 1;
+    });
+    const labels = Object.keys(counts).sort();
+    const values = labels.map(date => counts[date]);
+
+    // Create or get the canvas
+    let canvas = document.getElementById('requests-per-day-canvas');
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'requests-per-day-canvas';
+        canvas.width = 320;
+        canvas.height = 160;
+        canvas.style.position = 'fixed';
+        canvas.style.left = '20px';
+        canvas.style.bottom = '20px';
+        canvas.style.background = 'rgba(255,255,255,0.95)';
+        canvas.style.border = '1px solid #ccc';
+        canvas.style.zIndex = 1000;
+        document.body.appendChild(canvas);
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(40, 10);
+    ctx.lineTo(40, 140);
+    ctx.lineTo(310, 140);
+    ctx.stroke();
+
+    // Draw bars
+    const maxVal = Math.max(...values, 1);
+    const barWidth = Math.max(10, Math.floor((260 / values.length)));
+    values.forEach((v, i) => {
+        const x = 45 + i * barWidth;
+        const y = 140 - (v / maxVal) * 120;
+        ctx.fillStyle = '#4287f5';
+        ctx.fillRect(x, y, barWidth - 2, 140 - y);
+    });
+
+    // Draw labels (dates, only every Nth if too many)
+    ctx.fillStyle = '#222';
+    ctx.font = '10px sans-serif';
+    let step = 1;
+    if (labels.length > 8) step = Math.ceil(labels.length / 8);
+    labels.forEach((label, i) => {
+        if (i % step === 0) {
+            ctx.save();
+            ctx.translate(45 + i * barWidth + barWidth / 2, 150);
+            ctx.rotate(-Math.PI / 6);
+            ctx.fillText(label.slice(5), 0, 0); // show MM-DD
+            ctx.restore();
+        }
+    });
+
+    // Draw y-axis label
+    ctx.save();
+    ctx.translate(10, 100);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Requests', 0, 0);
+    ctx.restore();
+
+    // Draw title
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('Requests per Day', 100, 20);
+}
+
+// Update this function to plot requests per hour
+function plotRequestsPerHour(data) {
+    // Aggregate counts per hour
+    const counts = {};
+    data.forEach(row => {
+        const date = new Date(row.Timestamp * 1000);
+        // Format: YYYY-MM-DD HH
+        const hourLabel = date.toISOString().slice(0, 13).replace('T', ' ');
+        counts[hourLabel] = (counts[hourLabel] || 0) + 1;
+    });
+    const labels = Object.keys(counts).sort();
+    const values = labels.map(label => counts[label]);
+
+    // Create or get the canvas
+    let canvas = document.getElementById('requests-per-day-canvas');
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'requests-per-day-canvas';
+        canvas.width = 420;
+        canvas.height = 180;
+        canvas.style.position = 'fixed';
+        canvas.style.left = '20px';
+        canvas.style.bottom = '20px';
+        canvas.style.background = 'rgba(255,255,255,0.95)';
+        canvas.style.border = '1px solid #ccc';
+        canvas.style.zIndex = 1000;
+        document.body.appendChild(canvas);
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(50, 20);
+    ctx.lineTo(50, 150);
+    ctx.lineTo(400, 150);
+    ctx.stroke();
+
+    // Draw bars
+    const maxVal = Math.max(...values, 1);
+    const barWidth = Math.max(6, Math.floor((340 / values.length)));
+    values.forEach((v, i) => {
+        const x = 55 + i * barWidth;
+        const y = 150 - (v / maxVal) * 120;
+        ctx.fillStyle = '#4287f5';
+        ctx.fillRect(x, y, barWidth - 2, 150 - y);
+    });
+
+    // Draw labels (hours, only every Nth if too many)
+    ctx.fillStyle = '#222';
+    ctx.font = '10px sans-serif';
+    let step = 1;
+    if (labels.length > 12) step = Math.ceil(labels.length / 12);
+    labels.forEach((label, i) => {
+        if (i % step === 0) {
+            ctx.save();
+            ctx.translate(55 + i * barWidth + barWidth / 2, 160);
+            ctx.rotate(-Math.PI / 6);
+            ctx.fillText(label.slice(11), 0, 0); // show HH
+            ctx.restore();
+        }
+    });
+
+    // Draw y-axis label
+    ctx.save();
+    ctx.translate(15, 100);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Requests', 0, 0);
+    ctx.restore();
+
+    // Draw title
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('Requests per Hour', 140, 35);
+}
+
+// Update this function to plot requests per minute
+function plotRequestsPerMinute(data) {
+    // Aggregate counts per minute
+    const counts = {};
+    data.forEach(row => {
+        const date = new Date(row.Timestamp * 1000);
+        // Format: YYYY-MM-DD HH:MM
+        const minLabel = date.toISOString().slice(0, 16).replace('T', ' ');
+        counts[minLabel] = (counts[minLabel] || 0) + 1;
+    });
+    const labels = Object.keys(counts).sort();
+    const values = labels.map(label => counts[label]);
+
+    // Set a fixed, smaller canvas size for a compact plot
+    const canvasWidth = 380;
+    const canvasHeight = 120;
+    let canvas = document.getElementById('requests-per-day-canvas');
+    if (!canvas) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'requests-per-day-canvas';
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        canvas.style.position = 'fixed';
+        canvas.style.left = '20px';
+        canvas.style.bottom = '20px';
+        canvas.style.background = 'rgba(255,255,255,0.95)';
+        canvas.style.border = '1px solid #ccc';
+        canvas.style.zIndex = 1000;
+        document.body.appendChild(canvas);
+    } else {
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+    }
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Margins
+    const marginLeft = 40;
+    const marginRight = 10;
+    const marginTop = 20;
+    const marginBottom = 28;
+    const plotWidth = canvasWidth - marginLeft - marginRight;
+    const plotHeight = canvasHeight - marginTop - marginBottom;
+
+    // Draw axes
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(marginLeft, marginTop);
+    ctx.lineTo(marginLeft, canvasHeight - marginBottom);
+    ctx.lineTo(canvasWidth - marginRight, canvasHeight - marginBottom);
+    ctx.stroke();
+
+    // Draw bars, fit all bars in plotWidth
+    const maxVal = Math.max(...values, 1);
+    const barWidth = Math.max(1, Math.floor(plotWidth / labels.length));
+    values.forEach((v, i) => {
+        const x = marginLeft + i * barWidth;
+        const y = canvasHeight - marginBottom - (v / maxVal) * plotHeight;
+        ctx.fillStyle = '#4287f5';
+        ctx.fillRect(x, y, barWidth, (v / maxVal) * plotHeight);
+    });
+
+    // Draw labels (minutes, only every Nth if too many)
+    ctx.fillStyle = '#222';
+    ctx.font = '9px sans-serif';
+    let step = 1;
+    if (labels.length > 10) step = Math.ceil(labels.length / 10);
+    labels.forEach((label, i) => {
+        if (i % step === 0) {
+            ctx.save();
+            ctx.translate(marginLeft + i * barWidth + barWidth / 2, canvasHeight - marginBottom + 10);
+            ctx.rotate(-Math.PI / 6);
+            ctx.fillText(label.slice(11), 0, 0); // show HH:MM
+            ctx.restore();
+        }
+    });
+
+    // Draw y-axis label
+    ctx.save();
+    ctx.translate(12, canvasHeight / 2 + 10);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Requests', 0, 0);
+    ctx.restore();
+
+    // Draw title
+    ctx.font = 'bold 11px sans-serif';
+    ctx.fillText('Requests per Minute', marginLeft + 30, marginTop - 6);
+}
+
 async function main() {
     const data = await fetchData();
-    console.log(data);
 
     const scene = new THREE.Scene();
     const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#globe') });
@@ -121,7 +361,7 @@ async function main() {
     renderer.domElement.addEventListener('mousemove', (event) => {
         mouseVector.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouseVector.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    
+
         raycaster.setFromCamera(mouseVector, camera);
         const intersects = raycaster.intersectObjects(dots);
         if (intersects.length > 0) {
@@ -129,7 +369,7 @@ async function main() {
             intersects[0].object.getWorldPosition(dotWorldPos);
             const normal = dotWorldPos.clone().normalize();
             const camToDot = camera.position.clone().sub(dotWorldPos).normalize();
-            
+
             if (normal.dot(camToDot) > 0) {
                 const ip = intersects[0].object.userData.ipAddress;
                 const suspicious = intersects[0].object.userData.suspicious;
@@ -145,6 +385,10 @@ async function main() {
             tooltip.style.display = 'none';
         }
     });
+
+    plotRequestsPerDay(data);
+    plotRequestsPerHour(data);
+    plotRequestsPerMinute(data);
 
     const render = () => {
         earthMesh.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), targetRotationX);
